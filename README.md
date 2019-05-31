@@ -3,8 +3,10 @@ Implementation of a processor with the MIPS architecture and the HDL Verilog.
 
 ## Modules:
 - [ ] ALU.
-- [ ] ALU Control.
+- [x] ALU Control.
 - [x] Register File.
+- [x] Sign extend.
+- [x] Shift left 2.
 - [x] Instruction Memory.
 - [x] Program Counter.
 - [ ] Main Control Unit.
