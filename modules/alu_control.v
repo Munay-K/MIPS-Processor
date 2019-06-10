@@ -17,7 +17,7 @@ always @(*)
 begin
 	case(ALUop)
 		2'b00 : out = 4'b0010;
-		2'b01 : out = 4'b0110;
+		2'b?1 : out = 4'b0110;
 		2'b10 :
 		case(funct)
 			6'b??0000 : out = 4'b0010;
