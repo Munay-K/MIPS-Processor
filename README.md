@@ -6,13 +6,13 @@ Implementation of a processor with the MIPS architecture and the HDL Verilog.
 - [x] ALU Control.
 - [x] Register File.
 - [x] Sign extend.
-- [x] Shift left 2.
+- [ ] Shift left 2 (1 from 2).
 - [x] Instruction Memory.
 - [x] Program Counter.
-- [ ] Main Control Unit.
+- [x] Main Control Unit.
 - [x] Data Memory.
-- [ ] MUX (1 from 4).
-- [ ] Adder(1 from 2). 
+- [ ] MUX (3 from 4).
+- [x] Adder(1 from 2). 
   
 
 ###### Participants:
