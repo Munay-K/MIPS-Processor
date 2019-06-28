@@ -1,7 +1,7 @@
 module mainControl(opcode,RegDst,Jump,Branch,MemRead,MemWrite,MemtoReg,ALUOp,ALUSrc,RegWrite);
 input [5:0] opcode;
-output reg Branch,MemRead,MemWrite,ALUSrc,RegWrite;
-output reg [1:0] RegDst,MemtoReg,ALUOp,Jump;
+output reg Branch,MemRead,MemWrite,ALUSrc,RegWrite,MemtoReg,RegDst;
+output reg [1:0] ALUOp,Jump;
 
 always @(*)
 begin

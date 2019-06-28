@@ -16,7 +16,7 @@ begin
 	endcase
 end
 
-assign address = in_address;
+assign address = reg_address;
 
 endmodule
 
@@ -26,3 +26,5 @@ endmodule
 //
 //All this operations were made in order to implement a pipeline in
 //future updates.
+//
+//PC+8 para cuando se hace un jal (jump and link)
