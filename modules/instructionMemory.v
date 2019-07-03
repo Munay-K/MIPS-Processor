@@ -1,8 +1,9 @@
-module instructionMemory(pc,op,rs,rt,rd,shamt,funct,address);
+module instructionMemory(pc,op,rs,rt,rd,shamt,funct,address,jump_address);
 input [31:0] pc;
 output [5:0] op, funct;
 output [4:0] rs,rt,rd,shamt;
 output [15:0] address;
+output [25:0] jump_address;
 
 wire [31:0] instruction;
 reg [7:0] program_instructions [0:255];
@@ -18,5 +19,6 @@ assign rd = instruction[15:11];
 assign shamt = instruction[10:6];
 assign funct = instruction[5:0];
 assign address = instruction[15:0];
+assign jump_address = instruction[25:0];
 
 endmodule
