@@ -1,11 +1,11 @@
-module instructionMemory(pc,op,rs,rt,rd,shamt,funct,address,jump_address);
+module instructionMemory(pc,op,rs,rt,rd,shamt,funct,address,jump_address,instruction);
 input [31:0] pc;
 output [5:0] op, funct;
 output [4:0] rs,rt,rd,shamt;
 output [15:0] address;
 output [25:0] jump_address;
+output wire [31:0] instruction;
 
-wire [31:0] instruction;
 reg [7:0] program_instructions [0:255];
 
 initial

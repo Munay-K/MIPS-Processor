@@ -18,89 +18,110 @@
 `include "modules/addAlu.v"
 
 module Pathline();
-reg clk;
-reg [1:0] OPcode;
-reg [31:0] in_address;
+reg clk,PC_reset;
+wire [31:0] PC_input;
 wire [31:0] PC_output;
 
-programCounter U1 (clk,in_address,OPcode,PC_output);
+programCounter PC (clk,PC_input,PC_output,PC_reset);
+
+wire [2:0] add_input4;
+wire [31:0] ADD4_output;
+
+addAlu ADD_4 (PC_output,add_input4,ADD4_output);
 
 wire [5:0] op, funct;
 wire [4:0] rs,rt,rd,shamt;
 wire [15:0] address;
 wire [25:0] jump_address;
+wire [31:0] instruction;
 
-instructionMemory U2 (PC_output,op,rs,rt,rd,shamt,funct,address,jump_address);
+instructionMemory IM (PC_output,op,rs,rt,rd,shamt,funct,address,jump_address,instruction);
 
-reg [31:0] jump_address_shifted;
+wire [28:0] jump_address_shifted;
 
-shiftLeft2 U3 (jump_address,jump_address_shifted);
+shift26_28 SHIFT1 (jump_address,jump_address_shifted);
 
+wire [31:0] jump_address_merged; //jump_address_shifted merged with ADD4_output[31:28]
 wire Branch,MemRead,MemWrite,ALUSrc,RegWrite,RegDst,MemtoReg;
 wire [1:0] ALUOp,Jump;
 
-mainControl U4 (op,RegDst,Jump,Branch,MemRead,MemWrite,MemtoReg,ALUOp,ALUSrc,RegWrite);
+mainControl CONTROL (op,RegDst,Jump,Branch,MemRead,MemWrite,MemtoReg,ALUOp,ALUSrc,RegWrite);
 
 wire [31:0] muxReg;
 
-multiplaxer2x1 U5 (rt,rd,RegDst,muxReg); // mux betweeen IM and Reg
+mux5 MUX1 (rt,rd,RegDst,muxReg); // mux betweeen IM and Reg
 
 wire [31:0] dataR1,dataR2,dataW; //dataW come from memory
 
-regfile32x32 U6 (clk,rs,rt,dataR1,dataR2,muxReg,dataW);
+regfile32x32 REG (clk,rs,rt,dataR1,dataR2,muxReg,dataW);
 
-wire [31:0] signOut;
+wire [31:0] sign_output;
 
-sign_extend U7 (address,signOut);
+sign_extend SIGN_EXTEND (address,sign_output);
+
+wire [31:0] sign_shifted;
+
+shift32_32 SHIFT2 (sign_output, sign_shifted);
 
 wire [31:0] muxALU;
 
-multiplaxer2x1 U8 (signOut,dataR2,ALUSrc,muxALU); // mux between Reg and ALU
+mux32 MUX2 (dataR2,sign_output,ALUSrc,muxALU); // mux between Reg and ALU
 
 wire [3:0] ALUCtrlOut;
 
-alu_control U9 (funct,ALUOp,ALUCtrlOut);
+alu_control ALU_CONTROL (funct,ALUOp,ALUCtrlOut);
+
+wire [31:0] ADDalu_output;
+
+addAlu ADD_ALU (ADD4_output,sign_shifted,ADDalu_output);
 
 wire ovf, zero;
 wire [31:0] ALUOut;
 
-alu32 U10 (dataR1,muxALU,ALUCtrlOut,ovf,ALUOut,zero);
+alu32 ALU (dataR1,muxALU,ALUCtrlOut,ovf,ALUOut,zero);
 
-wire [31:0] DataMemoryOut;
+wire [31:0] muxMux_output;
 
-dataMemory U11 (ALUOut,dataR2,MemWrite,MemRead,DataMemoryOut);
+wire BranchAndZero;
+assign BranchAndZero = Branch && zero;
 
-multiplaxer2x1 U12 (DataMemoryOut,ALUOut,MemtoReg,dataW);
+mux32 MUX3 (ADD4_output,ADDalu_output,BranchAndZero,muxMux_output);
 
-wire [31:0] shiftOut;
+wire [31:0] DataMemory_output;
 
-shiftLeft2 U13 (signOut,shiftOut);
+dataMemory MEMORY (ALUOut,dataR2,MemWrite,MemRead,DataMemory_output);
 
-wire [31:0] addAlu_output;
+wire [31:0] muxPC_output;
 
-addAlu U14 (PC_output,shiftOut,addAlu_output);
+mux32 MUX4 (jump_address_merged,muxMux_output,Jump,PC_input);
+
+mux32 MUX5 (DataMemory_output,ALUOut,MemtoReg,dataW);
 
 initial
 begin
 	clk = 0;
-	OPcode=2'b11;
-	#10;
-	OPcode=2'b00;
-	jump_address_shifted[31:28] = OPcode;
-
+	PC_reset = 1;
+	#2
+	PC_reset = 0;
 end
 
 always
 	#1 clk=!clk;
 
-initial
-	#50 $finish;
-
-initial
+always @(*)
 begin
-	$monitor("clk: %b input: %0x output: %0x",clk,PC_output, ALUOut);
+	$display("P_COUNTER -> CLOCK: %b RESET: %b INPUT: %h OUTPUT: %h",clk,
+		PC_reset,PC_input,PC_output);
+	$display("I_MEMORY -> INPUT: %h OUTPUT: %b", PC_output,instruction);
+	$display("REGISTER -> CLK: %b RS: %h RT: %h MUX: %h WRITE: %h READ1: %h READ2: %h",clk,rs,rt,muxReg,dataW,dataR1,dataR2);
+	$display("SIGN_EXTEND -> INPUT: %h OUTPUT: %h", address,sign_output);
+	$display("ALU_CONTROL -> INPUT: %h CONTROL: %b OUTPUT: %h",funct,ALUCtrlOut);
+	$display("ALU --> INPUT_1: %h INPUT_2: %h ZERO: %b OUTPUT: %h \n",dataR1,muxALU,zero,ALUOut);
+
 end
 
+initial
+	#10 $finish;
 
 endmodule
 

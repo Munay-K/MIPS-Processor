@@ -1,30 +1,20 @@
-module programCounter(clk,in_address,OPcode,address);
-input clk;
-input [1:0] OPcode;
+module programCounter(clk,in_address,out_address,rst);
+input clk, rst;
 input [31:0] in_address;
-output [31:0] address;
+output [31:0] out_address;
 
 reg [31:0] reg_address;
 
 always @(posedge clk)
 begin
-	case(OPcode)
-		2'b00 : reg_address = reg_address + 4;
-		2'b01 : reg_address = in_address;
-		2'b10 : reg_address = address;
-		2'b11 : reg_address = 0;
-	endcase
+	if(rst)
+		reg_address = 32'h00000000;
+	else
+		reg_address = in_address;
+	
+//	$monitor("CLOCK: %b RESET: %b IN_ADDRESS: %h OUT_ADDRESS: %h", clk,rst,in_address,out_address);
 end
 
-assign address = reg_address;
+assign out_address = reg_address;
 
 endmodule
-
-//This Pogram Counter has 3 inputs in this case, the clock as clk for
-//syncronization, the OPcode which indicates the operation we need to
-//make and the input address as 'in_address'.
-//
-//All this operations were made in order to implement a pipeline in
-//future updates.
-//
-//PC+8 para cuando se hace un jal (jump and link)

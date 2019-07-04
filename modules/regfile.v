@@ -8,7 +8,7 @@ output reg [31:0] dataR1,dataR2;
 integer i;
 
 initial
-	$readmemb("registers.txt",regf);
+	$readmemb("data/registers.txt",regf);
 
 always @(posedge clk)
 begin
