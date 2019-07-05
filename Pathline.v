@@ -26,6 +26,7 @@ programCounter PC (clk,PC_input,PC_output,PC_reset);
 
 wire [2:0] add_input4;
 wire [31:0] ADD4_output;
+assign add_input4 = 2'b10;
 
 addAlu ADD_4 (PC_output,add_input4,ADD4_output);
 
@@ -37,17 +38,17 @@ wire [31:0] instruction;
 
 instructionMemory IM (PC_output,op,rs,rt,rd,shamt,funct,address,jump_address,instruction);
 
-wire [28:0] jump_address_shifted;
+wire [27:0] jump_address_shifted;
 
 shift26_28 SHIFT1 (jump_address,jump_address_shifted);
 
 wire [31:0] jump_address_merged; //jump_address_shifted merged with ADD4_output[31:28]
-wire Branch,MemRead,MemWrite,ALUSrc,RegWrite,RegDst,MemtoReg;
+wire Branch, MemRead, MemWrite, ALUSrc, RegWrite, RegDst, MemtoReg, SignExt,InstrtoReg;
 wire [1:0] ALUOp,Jump;
 
-mainControl CONTROL (op,RegDst,Jump,Branch,MemRead,MemWrite,MemtoReg,ALUOp,ALUSrc,RegWrite);
+mainControl CONTROL(op,funct,RegDst,Jump,Branch,MemRead,MemWrite,MemtoReg,ALUOp,ALUSrc,RegWrite,SignExt,InstrtoReg);
 
-wire [31:0] muxReg;
+wire [4:0] muxReg;
 
 mux5 MUX1 (rt,rd,RegDst,muxReg); // mux betweeen IM and Reg
 
@@ -92,10 +93,11 @@ wire [31:0] DataMemory_output;
 dataMemory MEMORY (ALUOut,dataR2,MemWrite,MemRead,DataMemory_output);
 
 wire [31:0] muxPC_output;
+assign jump_address_merged = {ADD4_output[31:28],jump_address_shifted[27:0]};
 
-mux32 MUX4 (jump_address_merged,muxMux_output,Jump,PC_input);
+mux32 MUX4 (muxMux_output,tjump_address_merged,Jump,PC_input);
 
-mux32 MUX5 (DataMemory_output,ALUOut,MemtoReg,dataW);
+mux32 MUX5 (ALUOut,DataMemory_output,MemtoReg,dataW);
 
 initial
 begin
@@ -112,18 +114,20 @@ always @(*)
 begin
 	$display("P_COUNTER -> CLOCK: %b RESET: %b INPUT: %h OUTPUT: %h",clk,
 		PC_reset,PC_input,PC_output);
-	$display("I_MEMORY -> INPUT: %h OUTPUT: %b", PC_output,instruction);
-	$display("MAIN_CONTROL -> OP: %b REG: %b JUMP: %b BRANCH: %b MREAD: %b MWRITE: %b MtoR: %b Aop: %b Asr: %b RWRITE: %b",
-		op,RegDst,Jump,Branch,MemRead,MemWrite,MemtoReg,ALUOp,ALUSrc,RegWrite);
+	$display("I_MEMORY -> INPUT: %h OP: %b RS: %b RT: %b RD: %b SHAMT: %b FUNCT: %b", PC_output,op,rs,rt,rd,shamt,funct);
+	$display("MAIN_CONTROL -> OP: %b REG: %b JUMP: %b BRANCH: %b MREAD: %b MWRITE: %b MtoR: %b Aop: %b Asr: %b RWRITE: %b INSTRUCTION: %b",op,RegDst,Jump,Branch,MemRead,MemWrite,MemtoReg,ALUOp,ALUSrc,RegWrite,instruction);
 	$display("REGISTER -> CLK: %b RS: %h RT: %h MUX: %h WRITE: %h READ1: %h READ2: %h",clk,rs,rt,muxReg,dataW,dataR1,dataR2);
 	$display("SIGN_EXTEND -> INPUT: %h OUTPUT: %h", address,sign_output);
 	$display("ALU_CONTROL -> INPUT: %h CONTROL: %b OUTPUT: %h",funct,ALUOp,ALUCtrlOut);
-	$display("ALU --> INPUT_1: %h INPUT_2: %h ZERO: %b OUTPUT: %h \n",dataR1,muxALU,zero,ALUOut);
+	$display("ALU --> INPUT_1: %h INPUT_2: %h ZERO: %b OUTPUT: %h",dataR1,muxALU,zero,ALUOut);
+	$display("ADD_4 --> INPUT: %h OUTPUT: %h", PC_output,ADD4_output);
+	$display("ADD_ALU --> INPUT1: %h INPUT2: %h OUTPUT:",ADD4_output,sign_shifted,ADDalu_output);
+	$display("MUX4 ---> JUMP_SHIFTED: %h MUXMUX: %h OUTPUT: %h \n",jump_address_shifted,muxMux_output,PC_input);
 
 end
 
 initial
-	#10 $finish;
+	#100 $finish;
 
 endmodule
 

@@ -1,6 +1,6 @@
 module shift26_28(in,out);
 input [25:0] in;
-output [28:0] out;
+output [27:0] out;
 
 assign out = in << 2;
 
