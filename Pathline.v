@@ -113,9 +113,11 @@ begin
 	$display("P_COUNTER -> CLOCK: %b RESET: %b INPUT: %h OUTPUT: %h",clk,
 		PC_reset,PC_input,PC_output);
 	$display("I_MEMORY -> INPUT: %h OUTPUT: %b", PC_output,instruction);
+	$display("MAIN_CONTROL -> OP: %b REG: %b JUMP: %b BRANCH: %b MREAD: %b MWRITE: %b MtoR: %b Aop: %b Asr: %b RWRITE: %b",
+		op,RegDst,Jump,Branch,MemRead,MemWrite,MemtoReg,ALUOp,ALUSrc,RegWrite);
 	$display("REGISTER -> CLK: %b RS: %h RT: %h MUX: %h WRITE: %h READ1: %h READ2: %h",clk,rs,rt,muxReg,dataW,dataR1,dataR2);
 	$display("SIGN_EXTEND -> INPUT: %h OUTPUT: %h", address,sign_output);
-	$display("ALU_CONTROL -> INPUT: %h CONTROL: %b OUTPUT: %h",funct,ALUCtrlOut);
+	$display("ALU_CONTROL -> INPUT: %h CONTROL: %b OUTPUT: %h",funct,ALUOp,ALUCtrlOut);
 	$display("ALU --> INPUT_1: %h INPUT_2: %h ZERO: %b OUTPUT: %h \n",dataR1,muxALU,zero,ALUOut);
 
 end
