@@ -127,7 +127,7 @@ begin
 end
 
 initial
-	#100 $finish;
+	#50 $finish;
 
 endmodule
 
