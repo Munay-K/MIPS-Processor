@@ -17,4 +17,4 @@ Implementation of a processor with the MIPS architecture and the HDL Verilog.
 
 ###### Participants:
 - Gonzalo Alfaro Caso.
-- Esteban Principe.
+
